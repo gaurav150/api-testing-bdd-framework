@@ -11,16 +11,44 @@ import java.io.PrintStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Properties;
 
 public class APIHelper {
 
+    private static final Path LOG_DIR = Path.of("logs");
+    private static final Path REQUEST_LOG = LOG_DIR.resolve("request.log");
+    private static final Path RESPONSE_LOG = LOG_DIR.resolve("response.log");
+
+    public static void initLogFiles() {
+        try {
+            Files.createDirectories(LOG_DIR);
+            Files.writeString(REQUEST_LOG, "", StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            Files.writeString(RESPONSE_LOG, "", StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to initialize log files", e);
+        }
+    }
+
+    public static void writeLogSeparator(String scenarioName) {
+        String separator = System.lineSeparator()
+                + "========== Scenario: " + scenarioName + " =========="
+                + System.lineSeparator();
+        try {
+            Files.writeString(REQUEST_LOG, separator, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            Files.writeString(RESPONSE_LOG, separator, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to write log separator", e);
+        }
+    }
+
     public RequestSpecification buildAddPlaceRequestSpec() {
         try {
-            Path logDir = Path.of("logs");
-            Files.createDirectories(logDir);
-            PrintStream requestLogs = new PrintStream(Files.newOutputStream(logDir.resolve("requestLog.txt")));
-            PrintStream responseLogs = new PrintStream(Files.newOutputStream(logDir.resolve("responseLog.txt")));
+            Files.createDirectories(LOG_DIR);
+            PrintStream requestLogs = new PrintStream(
+                    Files.newOutputStream(REQUEST_LOG, StandardOpenOption.CREATE, StandardOpenOption.APPEND));
+            PrintStream responseLogs = new PrintStream(
+                    Files.newOutputStream(RESPONSE_LOG, StandardOpenOption.CREATE, StandardOpenOption.APPEND));
             return new RequestSpecBuilder()
                     .setBaseUri(getGlobalValue("baseUrl"))
                     .addFilter(RequestLoggingFilter.logRequestTo(requestLogs))

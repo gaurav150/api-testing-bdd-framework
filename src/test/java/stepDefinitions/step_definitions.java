@@ -25,6 +25,13 @@ public class step_definitions extends APIHelper {
                 .body(addPlaceHelper.addPlacePayload());
     }
 
+    @Given("^PayLoad for Add Place API has been Created \"(.+)\" \"(.+)\" \"(.+)\"$")
+    public void GivenPayLoadForAddPlaceWithParameters(String name, String language, String address) {
+        res = given()
+                .spec(buildAddPlaceRequestSpec())
+                .body(addPlaceHelper.addPlacePayload(name, language, address));
+    }
+
     @When("^the user sends a POST request to \"(.+)\"$")
     public void GivenUserSendsPostRequest(String postEndpoint) {
         response = res.post(postEndpoint);
