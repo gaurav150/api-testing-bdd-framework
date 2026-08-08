@@ -73,4 +73,23 @@ public class APIHelper {
         }
         return properties.getProperty(key);
     }
+
+    public RequestSpecification buildGetPlaceRequest(String placeId) {
+        try {
+            Files.createDirectories(LOG_DIR);
+            PrintStream requestLogs = new PrintStream(
+                    Files.newOutputStream(REQUEST_LOG, StandardOpenOption.CREATE, StandardOpenOption.APPEND));
+            PrintStream responseLogs = new PrintStream(
+                    Files.newOutputStream(REQUEST_LOG, StandardOpenOption.CREATE, StandardOpenOption.APPEND));
+            return new RequestSpecBuilder()
+                    .setBaseUri(getGlobalValue("baseUrl"))
+                    .addFilter(RequestLoggingFilter.logRequestTo(requestLogs))
+                    .addFilter(ResponseLoggingFilter.logResponseTo(responseLogs))
+                    .addQueryParam("key", "qaclick123")
+                    .addQueryParam("place_id", placeId)
+                    .build();
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to create request/response log files", e);
+        }
+    }
 }
