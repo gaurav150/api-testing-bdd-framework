@@ -6,7 +6,6 @@ import resources.helpers.AddPlaceHelper;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.When;
 import io.cucumber.java.en.Then;
-import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import org.testng.Assert;
@@ -18,7 +17,7 @@ public class step_definitions extends APIHelper {
     RequestSpecification res;
     Response response;
     AddPlaceHelper addPlaceHelper = new AddPlaceHelper();
-    String placeId;
+    static String placeId;
 
     @Given("^PayLoad for Add Place API has been Created$")
     public void GivenPayLoadForAddPlace() {
@@ -32,6 +31,13 @@ public class step_definitions extends APIHelper {
         res = given()
                 .spec(buildAddPlaceRequestSpec())
                 .body(addPlaceHelper.addPlacePayload(name, language, address));
+    }
+
+    @Given("^PayLoad for Delete Place API has been Created$")
+    public void GivenPayLoadForDeletePlace() {
+        res = given()
+                .spec(buildAddPlaceRequestSpec())
+                .body(addPlaceHelper.deletePlacePayLoad(placeId));
     }
 
     @When("^the user sends a \"(.+)\" request to \"(.+)\"$")
@@ -54,10 +60,16 @@ public class step_definitions extends APIHelper {
 
     @Then("^\"(.+)\" in response Body is \"(.+)\"$")
     public void ThenResponseBody(String key, String value) {
-        JsonPath js = response.jsonPath();
-        String firstValue = js.getString(key);
-        placeId = js.getString("place_id");
+        String firstValue = getJsonPath(response, key);
         Assert.assertEquals(firstValue, value, "values are not matching");
+        if ("place_id".equals(key)) {
+            placeId = firstValue;
+        }
+    }
+
+    @Then("^store place_id from response$")
+    public void storePlaceIdFromResponse() {
+        placeId = getJsonPath(response, "place_id");
         Assert.assertNotNull(placeId, "place id can not be null");
     }
 
@@ -68,8 +80,7 @@ public class step_definitions extends APIHelper {
 
         GivenUserSendsHttpRequest("GET", resource);
         Assert.assertEquals(response.getStatusCode(), 200);
-        JsonPath js = response.jsonPath();
-        String actualName = js.getString("name");
+        String actualName = getJsonPath(response, "name");
         Assert.assertEquals(actualName, name, "name Should match with expected");
     }
 }

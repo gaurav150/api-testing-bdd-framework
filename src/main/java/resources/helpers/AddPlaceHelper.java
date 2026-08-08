@@ -44,4 +44,8 @@ public class AddPlaceHelper {
         p.setLocation(l);
         return p;
     }
+
+    public String deletePlacePayLoad(String placeId) {
+        return "{\n    \"place_id\":\"" + placeId + "\"\n}";
+    }
 }

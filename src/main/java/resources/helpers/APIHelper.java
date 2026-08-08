@@ -3,7 +3,10 @@ package resources.helpers;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
+import org.testng.Assert;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,6 +16,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Properties;
+
+import static io.restassured.RestAssured.given;
 
 public class APIHelper {
 
@@ -92,4 +97,33 @@ public class APIHelper {
             throw new UncheckedIOException("Failed to create request/response log files", e);
         }
     }
+
+    public RequestSpecification buildDeletePlaceRequestSpec() {
+        try {
+            Files.createDirectories(LOG_DIR);
+            PrintStream requestLogs = new PrintStream(
+                    Files.newOutputStream(REQUEST_LOG, StandardOpenOption.CREATE, StandardOpenOption.APPEND));
+            PrintStream responseLogs = new PrintStream(
+                    Files.newOutputStream(RESPONSE_LOG, StandardOpenOption.CREATE, StandardOpenOption.APPEND));
+            return new RequestSpecBuilder()
+                    .setBaseUri(getGlobalValue("baseUrl"))
+                    .addFilter(RequestLoggingFilter.logRequestTo(requestLogs))
+                    .addFilter(ResponseLoggingFilter.logResponseTo(responseLogs))
+                    .addQueryParam("key", "qaclick123")
+                    .addHeader("Content-Type", "application/json")
+                    .build();
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to create request/response log files", e);
+        }
+    }
+
+    public String getJsonPath(Response response, String key) {
+        String body = response.getBody().asString();
+        if (body == null || body.isBlank()) {
+            throw new IllegalStateException("Response body is empty. Cannot read key: " + key);
+        }
+        JsonPath js = new JsonPath(body);
+        return js.getString(key);
+    }
+
 }
