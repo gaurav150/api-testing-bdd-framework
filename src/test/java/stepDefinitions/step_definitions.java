@@ -12,31 +12,28 @@ import org.testng.Assert;
 
 import static io.restassured.RestAssured.given;
 
-public class step_definitions extends APIHelper{
+public class step_definitions extends APIHelper {
 
     RequestSpecification res;
     Response response;
     AddPlaceHelper addPlaceHelper = new AddPlaceHelper();
 
-    @Given("PayLoad for Add Place API has been Created")
+    @Given("^PayLoad for Add Place API has been Created$")
     public void GivenPayLoadForAddPlace() {
         res = given()
                 .spec(buildAddPlaceRequestSpec())
                 .body(addPlaceHelper.addPlacePayload());
     }
 
-    @When("^User calls \"(.+)\" with post http request$")
-    public void GivenUserCallsPostHttpRequest(String httpCallType) {
-        if (httpCallType.equalsIgnoreCase("AddPlaceAPI")) {
-            response = res.post("maps/api/place/add/json");
-        }
+    @When("^the user sends a POST request to \"(.+)\"$")
+    public void GivenUserSendsPostRequest(String postEndpoint) {
+        response = res.post(postEndpoint);
     }
 
-    @Then("^the API calls is success with status code ([\\d]+)$")
+    @Then("^the response status code should be (\\d+)$")
     public void ThenVerifyApiCallIsSuccessful(int statusCode) {
         Assert.assertEquals(response.getStatusCode(), statusCode,
                 "status code should match");
-
     }
 
     @Then("^\"(.+)\" in response Body is \"(.+)\"$")
