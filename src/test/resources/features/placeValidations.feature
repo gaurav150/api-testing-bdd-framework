@@ -1,0 +1,32 @@
+Feature: Validating place API's
+
+    @AddPlace @DeletePlace
+    Scenario: Verify if place is added successfully using AddPlaceAPI
+        Given PayLoad for Add Place API has been Created
+        When the user sends a "POST" request to "addPlaceAPI"
+        Then the response status code should be 200
+        And "status" in response Body is "OK"
+        And "scope" in response Body is "APP"
+        And store place_id from response
+
+    @AddPlace
+    Scenario Outline: Verify if Place is added successfully usingAddPlaceAPI with passing data from feature file
+        Given PayLoad for Add Place API has been Created "<name>" "<language>" "<address>"
+        When the user sends a "POST" request to "addPlaceAPI"
+        Then the response status code should be 200
+        And "status" in response Body is "OK"
+        And "scope" in response Body is "APP"
+        And store place_id from response
+        And the user verifies place_id created maps to "<name>" using "getPlaceAPI"
+
+        Examples:
+            | name     | language | address            |
+            | AA_house | English  | World Cross Center |
+            | BB_house | Spanish  | Sea Cross Center   |
+
+    @DeletePlace
+    Scenario: Verify if Delete place functionality is working
+        Given PayLoad for Delete Place API has been Created
+        When the user sends a "POST" request to "deletePlaceAPI"
+        Then the response status code should be 200
+        And "status" in response Body is "OK"

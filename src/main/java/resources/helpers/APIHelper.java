@@ -67,6 +67,12 @@ public class APIHelper {
     }
 
     public String getGlobalValue(String key) {
+        // Allow overriding via system property for dynamic test setups (e.g., WireMock)
+        String sys = System.getProperty(key);
+        if (sys != null && !sys.isBlank()) {
+            return sys;
+        }
+
         Properties properties = new Properties();
         try (InputStream input = getClass().getClassLoader().getResourceAsStream("global.properties")) {
             if (input == null) {
